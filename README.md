@@ -3,7 +3,106 @@
 A production-grade AI agent that answers questions about countries using LangGraph.
 Built with proper software engineering practices for deployment readiness.
 
-## Features
+![Architecture](https://via.placeholder.com/800x400?text=Country+AI+Agent+Architecture)
+
+## Architecture Diagram
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                        COUNTRY INFORMATION AI AGENT                        │
+└─────────────────────────────────────────────────────────────────────────────┘
+                                      │
+                                      ▼
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                           USER INTERFACE                                    │
+│                         (Streamlit Web UI)                                  │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐       │
+│  │  Germany    │  │   Japan     │  │  Brazil     │  │   France    │  │ ... │
+│  └─────────────┘  └─────────────┘  └─────────────┘  └─────────────┘       │
+│                              │                                               │
+│                              ▼                                               │
+│                     ┌────────────────┐                                       │
+│                     │  Chat Input    │                                       │
+│                     └────────────────┘                                       │
+└─────────────────────────────────────────────────────────────────────────────┘
+                                      │
+                    ┌─────────────────┴─────────────────┐
+                    │                                   │
+                    ▼                                   ▼
+┌───────────────────────────────────────┐    ┌───────────────────────────────┐
+│          LANGGRAPH WORKFLOW           │    │      OPENROUTER API         │
+│                                      │    │   (deepseek/deepseek-chat)   │
+│  ┌─────────────────────────────┐      │    │                               │
+│  │   NODE 1: INTENT           │      │    │  ┌─────────────────────────┐  │
+│  │   Extract: Country + Fields │      │    │  │  Intent: "Germany"     │  │
+│  │   (LLM Call)                │      │    │  │  Fields: "population"  │  │
+│  └─────────────┬───────────────┘      │    │  └─────────────────────────┘  │
+│                │                      │    │                               │
+│                ▼                      │    └───────────────────────────────┘
+│  ┌─────────────────────────────┐      │                                    │
+│  │   NODE 2: TOOL INVOCATION  │      │    ┌───────────────────────────────┐
+│  │   Call REST Countries API  │      │    │   Synthesis Response        │
+│  │   Get: population, capital  │──────┼────│   "Germany has population   │  │
+│  └─────────────┬───────────────┘      │    │   of 83,491,249"          │  │
+│                │                      │    │   (LLM Call + Template)     │  │
+│                ▼                      │    └───────────────────────────────┘
+│  ┌─────────────────────────────┐      │                                    │
+│  │   NODE 3: ANSWER SYNTHESIS  │      │                                    │
+│  │   Generate Natural Answer  │      │                                    │
+│  │   (LLM or Template)        │      │                                    │
+│  └─────────────┬───────────────┘      │                                    │
+└────────────────┼───────────────────────┘                                    │
+                 │                                                      │
+                 ▼                                                      │
+┌───────────────────────────────────────────────────────────────────────┐
+│                     FINAL RESPONSE                                      │
+│   "Germany has a population of 83,491,249 people. The capital is    │
+│   Berlin and the currency is the Euro (€)."                          │
+└───────────────────────────────────────────────────────────────────────┘
+```
+
+## Data Flow
+
+```
+User Query: "What is the population of Germany?"
+    │
+    ▼
+┌──────────────────────────────────────────────┐
+│  NODE 1: INTENT IDENTIFICATION               │
+│  ┌────────────────────────────────────────┐  │
+│  │ LLM extracts:                          │  │
+│  │   - Country: "Germany"                 │  │
+│  │   - Fields: ["population"]             │  │
+│  └────────────────────────────────────────┘  │
+└──────────────────────────────────────────────┘
+    │
+    ▼
+┌──────────────────────────────────────────���───┐
+│  NODE 2: TOOL INVOCATION                      │
+│  ┌────────────────────────────────────────┐  │
+│  │ API Call: GET /name/germany            │  │
+│  │ Returns: {                             │  │
+│  │   name: "Germany",                    │  │
+│  │   population: 83491249,                │  │
+│  │   capital: "Berlin",                   │  │
+│  │   currency: "euro (€)"                  │  │
+│  │ }                                      │  │
+│  └────────────────────────────────────────┘  │
+└──────────────────────────────────────────────┘
+    │
+    ▼
+┌──────────────────────────────────────────────┐
+│  NODE 3: ANSWER SYNTHESIS                      │
+│  ┌────────────────────────────────────────┐  │
+│  │ LLM generates natural response:          │  │
+│  │ "Germany has a population of           │  │
+│  │ 83,491,249 people."                   │  │
+│  └────────────────────────────────────────┘  │
+└──────────────────────────────────────────────┘
+    │
+    ▼
+         Final Answer
+```
 
 - **3-Stage LangGraph Workflow**: Intent Identification → Tool Invocation → Answer Synthesis
 - **Multiple LLM Support**: Uses DeepSeek via OpenRouter (configurable via .env)
@@ -200,6 +299,72 @@ User Query
                 ▼
           Final Answer
 ```
+
+## Example Flows
+
+### Example 1: Population Query
+```
+Input:  "What is the population of Germany?"
+Output: "Germany has a population of 83,491,249 people."
+```
+
+### Example 2: Currency Query
+```
+Input:  "What currency does Japan use?"
+Output: "Japan uses the Japanese Yen (¥) as its currency."
+```
+
+### Example 3: Multiple Information
+```
+Input:  "What is the capital and population of Brazil?"
+Output: "Brazil's capital is Brasilia and it has a population of 214,313,498 people."
+```
+
+### Example 4: Language Query
+```
+Input:  "What languages are spoken in France?"
+Output: "The official language of France is French."
+```
+
+## Known Limitations & Trade-offs
+
+### Performance
+- **Latency**: Each query makes 2 LLM calls (~5-15 seconds total)
+  - Node 1: Intent identification
+  - Node 3: Answer synthesis
+- **Fallback**: If LLM fails, uses template-based response
+
+### Data Coverage
+- **Limited to REST Countries API**: ~250 countries supported
+- **Specific fields only**: population, capital, currency, languages, region, area, flag
+
+### Design Trade-offs
+| Aspect | Current | Alternative |
+|--------|---------|-------------|
+| Intent extraction | LLM-based | Pattern matching fallback |
+| Answer generation | LLM-based | Template fallback |
+| Streaming | Not implemented | Would need async |
+| Multi-country | Takes first match | Ambiguous cases |
+
+### Error Handling
+- Network failures: Retry up to 2 times with 1.5s delay
+- Invalid country: Returns "Country not found" message
+- Ambiguous names: Automatically picks first match
+
+## Production Considerations
+
+### Deployment Options
+1. **Streamlit Cloud** (easiest - free tier available)
+2. **Docker** (containerized, portable)
+3. **Heroku/Render** (PaaS deployment)
+
+### Environment Variables Required
+- `OPENAI_API_KEY` - Only required secret (from openrouter.ai)
+
+### Monitoring
+- Logs show Node 1 → Node 2 → Node 3 flow
+- Errors captured and displayed to user
+- Health check endpoint available in Docker
 
 ## License
 
