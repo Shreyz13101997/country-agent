@@ -3,8 +3,6 @@
 A production-grade AI agent that answers questions about countries using LangGraph.
 Built with proper software engineering practices for deployment readiness.
 
-![Architecture](https://via.placeholder.com/800x400?text=Country+AI+Agent+Architecture)
-
 ## Architecture Diagram
 
 ```
