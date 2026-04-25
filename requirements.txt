@@ -1,0 +1,28 @@
+# Country Information AI Agent
+# ========================
+# Dependencies - Using compatible versions
+# ========================
+
+# LangGraph - AI workflow orchestration
+langgraph>=0.2.0
+
+# LangChain - LLM integration
+langchain-core>=0.3.0
+langchain-openai>=0.2.0
+
+# HTTP clients
+httpx>=0.27.0
+requests>=2.32.0
+
+# Environment variables
+python-dotenv>=1.0.0
+
+# Streamlit - Web UI
+streamlit>=1.40.0
+
+# Data validation
+pydantic>=2.0.0
+
+# Testing
+pytest>=8.0.0
+pytest-cov>=6.0.0

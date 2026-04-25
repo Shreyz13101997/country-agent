@@ -1,0 +1,48 @@
+# Country Information AI Agent - Docker Compose
+# =========================================
+# Usage:
+#   docker-compose up          # Development
+#   docker-compose up -d     # Production (detached)
+#   docker-compose down     # Stop
+# =========================
+
+version: '3.8'
+
+services:
+  # -----------------------------------------------------------
+  # Streamlit Application
+  # -----------------------------------------------------------
+  streamlit:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: country-agent
+    ports:
+      - "8501:8501"  # Streamlit port
+    environment:
+      # OpenRouter API Key (REQUIRED)
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      
+      # Optional - LLM Configuration
+      - OPENROUTER_MODEL=${OPENROUTER_MODEL:-deepseek/deepseek-chat}
+      - LLM_TEMPERATURE=${LLM_TEMPERATURE:-0.1}
+      
+      # Optional - API Configuration
+      - COUNTRIES_API_TIMEOUT=${COUNTRIES_API_TIMEOUT:-10}
+    volumes:
+      - .:/app
+      - /app/__pycache__
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8501/_stcore/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+# -----------------------------------------------------------
+# Networks
+# -----------------------------------------------------------
+networks:
+  default:
+    name: country-agent-network
