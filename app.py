@@ -1,7 +1,7 @@
 """Streamlit UI - Country Information AI Agent."""
 
 import streamlit as st
-from src.workflows.graph import run_agent
+from src import run_agent
 
 st.set_page_config(
     page_title="Country Information AI Agent",
